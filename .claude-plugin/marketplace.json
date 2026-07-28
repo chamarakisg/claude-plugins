@@ -1,0 +1,21 @@
+{
+  "name": "iconplatforms-tools",
+  "description": "Internal Claude Code tools — git helpers and workflow shortcuts",
+  "owner": {
+    "name": "George Chamarakis",
+    "email": "hamarakisg@iconplatforms.com"
+  },
+  "plugins": [
+    {
+      "name": "commit-tools",
+      "description": "Slash command to stage all changes, commit with a given message, and push to the current branch",
+      "author": {
+        "name": "George Chamarakis",
+        "email": "hamarakisg@iconplatforms.com"
+      },
+      "source": "./plugins/commit-tools",
+      "category": "productivity",
+      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/main/plugins/commit-tools"
+    }
+  ]
+}
