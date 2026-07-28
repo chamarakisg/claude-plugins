@@ -15,7 +15,7 @@
       },
       "source": "./plugins/commit-tools",
       "category": "productivity",
-      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/main/plugins/commit-tools"
+      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/master/plugins/commit-tools"
     }
   ]
 }
