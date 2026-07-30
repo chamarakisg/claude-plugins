@@ -8,12 +8,12 @@ Instead of hand-writing the boilerplate to consume a Talos API in an Angular/Ion
 
 ## Commands
 
-### `/talos-init <npm-auth-token> [env-values-block]`
+### `/talos-init <npm-auth-token> <env-values-block>`
 
-One-shot bootstrap that gets a Talos integration running in a fresh app. Run it **once** before `/talos-feature`.
+One-shot bootstrap that gets a Talos integration running in a fresh app. Run it **once** before `/talos-feature`. Both inputs are required.
 
 - **`<npm-auth-token>`** — *required*. Token with read access to the `@saicongames` scope. Written only to `.npmrc` (kept out of git). If omitted, the command asks and stops.
-- **`[env-values-block]`** — the environment config values (`BASE_URL`, `GAME_TYPE_ID`, `USERGROUP_ID`, the three `APPLICATION_ID_*`, the three `MAGIC_KEY_*`, `VERSION_ID`). If omitted or incomplete, the command asks for the whole block and stops.
+- **`<env-values-block>`** — *required*. The environment config values (`BASE_URL`, `GAME_TYPE_ID`, `USERGROUP_ID`, the three `APPLICATION_ID_*`, the three `MAGIC_KEY_*`, `VERSION_ID`). If omitted or incomplete, the command asks for the whole block and stops.
 
 **What it does:**
 
@@ -24,11 +24,24 @@ One-shot bootstrap that gets a Talos integration running in a fresh app. Run it 
 
 **Usage:**
 
+Pass both inputs up front — the token, then the environment values as an object of key/value pairs:
+
 ```bash
-/talos-init npm_xxxxxxxxxxxxxxxxxxxx
+/talos-init npm_xxxxxxxxxxxxxxxxxxxx {
+  BASE_URL: 'https://...',
+  GAME_TYPE_ID: '...',
+  USERGROUP_ID: '...',
+  APPLICATION_ID_PORTAL: '...',
+  APPLICATION_ID_ANDROID: '...',
+  APPLICATION_ID_IOS: '...',
+  MAGIC_KEY_PORTAL: '...',
+  MAGIC_KEY_ANDROID: '...',
+  MAGIC_KEY_IOS: '...',
+  VERSION_ID: '...'
+}
 ```
 
-Then paste the environment values when asked.
+Or pass just the token and paste the environment values object when the command asks for them. Both are required — the command won't proceed until it has the token **and** a complete values object.
 
 ### `/talos-feature <entity> [mockup]`
 

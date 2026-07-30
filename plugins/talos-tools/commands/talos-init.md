@@ -1,6 +1,6 @@
 ---
 description: Bootstrap a Talos integration in an Angular/Ionic app. Takes a required npm auth token and a block of environment values. Writes `.npmrc` for the `@saicongames` private registry, installs `@saicongames/talos-integration-angular`, writes `src/environments/environment.ts` with the Talos config keys, and wires `TalosModule.forRoot(...)` into `AppModule`. Use when the user asks to "init/bootstrap/set up talos", "add the talos integration", or "wire up TalosModule" in a fresh app.
-argument-hint: <npm-auth-token> [env-values-block]
+argument-hint: <npm-auth-token> <env-values-block>
 ---
 
 # Talos init
@@ -20,7 +20,7 @@ Locked decisions (do not re-ask):
 Two inputs (from `$ARGUMENTS`):
 
 1. **npm auth token** (`$1`) — *required*. The token with read access to the `@saicongames` scope. It is a secret — write it only to `.npmrc` (which must be git-ignored). If not provided, **ask and stop until answered**: *"Paste the npm auth token with read access to the `@saicongames` scope."*
-2. **environment values** (`$2` onward) — the config values. Accept them as a pasted object/`key: value` block. The required keys are:
+2. **environment values** (`$2` onward) — *required*. The config values, accepted as a pasted object/`key: value` block. The required keys are:
 
    ```
    BASE_URL, GAME_TYPE_ID, USERGROUP_ID,
@@ -30,6 +30,8 @@ Two inputs (from `$ARGUMENTS`):
    ```
 
    If no values were passed, or any key is missing, **ask for the whole block and stop** until you have all of them. Do not invent, guess, or use placeholder values — every key must come from the user.
+
+Both inputs are required — the command cannot proceed without the token **and** a complete set of environment values.
 
 Usage: `/talos-init <npm-auth-token>` then paste the values when asked, or pass both up front.
 

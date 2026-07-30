@@ -13,7 +13,7 @@ This repo is a Claude Code **plugin marketplace**: [`.claude-plugin/marketplace.
 
 ### `talos-tools` in a nutshell
 
-- **`/talos-init <npm-auth-token>`** — one-time bootstrap: writes the `.npmrc` for the `@saicongames` private registry, installs `@saicongames/talos-integration-angular`, writes `src/environments/environment.ts`, and wires `TalosModule.forRoot(...)` into `AppModule`.
+- **`/talos-init <npm-auth-token> <env-values-block>`** — one-time bootstrap (both inputs required): writes the `.npmrc` for the `@saicongames` private registry, installs `@saicongames/talos-integration-angular`, writes `src/environments/environment.ts`, and wires `TalosModule.forRoot(...)` into `AppModule`.
 - **`/talos-feature <entity> [mockup]`** — scaffolds a typed service + component + view for a Talos entity by reading the real API off `TalosService` (no invented methods). If the packages aren't installed yet, it points you at `/talos-init`.
 
 ## Installation
