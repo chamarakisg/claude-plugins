@@ -7,15 +7,26 @@
   },
   "plugins": [
     {
-      "name": "commit-tools",
+      "name": "git-tools",
       "description": "Slash command to stage all changes, commit with a given message, and push to the current branch",
       "author": {
         "name": "George Chamarakis",
         "email": "hamarakisg@iconplatforms.com"
       },
-      "source": "./plugins/commit-tools",
-      "category": "productivity",
-      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/master/plugins/commit-tools"
+      "source": "./plugins/git-tools",
+      "category": "version control system",
+      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/master/plugins/git-tools"
+    },
+    {
+      "name": "talos-tools",
+      "description": "Slash commands for Talos-backed Angular apps: /talos-init bootstraps the integration (private-registry .npmrc, installs @saicongames/talos-integration-angular, writes environment.ts, wires TalosModule.forRoot), and /talos-feature scaffolds a typed service + component + view for any Talos entity wrapping TalosService.",
+      "author": {
+        "name": "George Chamarakis",
+        "email": "hamarakisg@iconplatforms.com"
+      },
+      "source": "./plugins/talos-tools",
+      "category": "talos code generation",
+      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/master/plugins/talos-tools"
     }
   ]
 }

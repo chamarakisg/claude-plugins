@@ -1,0 +1,9 @@
+{
+  "name": "talos-tools",
+  "description": "Slash commands for Talos-backed Angular apps: /talos-init bootstraps the integration (private-registry .npmrc, installs @saicongames/talos-integration-angular, writes environment.ts, wires TalosModule.forRoot), and /talos-feature scaffolds a typed service + component + view for any Talos entity wrapping TalosService.",
+  "version": "1.0.0",
+  "author": {
+    "name": "George Chamarakis",
+    "email": "hamarakisg@iconplatforms.com"
+  }
+}

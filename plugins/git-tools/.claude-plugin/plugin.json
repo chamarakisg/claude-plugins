@@ -1,5 +1,5 @@
 {
-  "name": "commit-tools",
+  "name": "git-tools",
   "description": "Slash command to stage all changes, commit with a given message, and push to the current branch",
   "version": "1.0.0",
   "author": {
