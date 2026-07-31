@@ -15,7 +15,7 @@
       },
       "source": "./plugins/git-tools",
       "category": "version control system",
-      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/master/plugins/git-tools"
+      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/main/plugins/git-tools"
     },
     {
       "name": "talos-tools",
@@ -26,7 +26,7 @@
       },
       "source": "./plugins/talos-tools",
       "category": "talos code generation",
-      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/master/plugins/talos-tools"
+      "homepage": "https://github.com/chamarakisg/claude-plugins/tree/main/plugins/talos-tools"
     }
   ]
 }
