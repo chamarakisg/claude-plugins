@@ -24,6 +24,28 @@ The command takes two arguments (from `$ARGUMENTS`):
 
 Usage: `/talos-feature <entity> [mockup]` — e.g. `/talos-feature quiz` or `/talos-feature quiz ./designs/quiz.png`.
 
+## Preflight — verify the Talos packages are installed (do this first)
+
+**Before anything else** — before resolving the entity, reading any `.d.ts`, or generating files — confirm the Talos integration is present. Do this even before Step 1. Check that the integration package is **declared** in `package.json` and that both packages are **installed** under `node_modules`. Only `@saicongames/talos-integration-angular` is a direct dependency — `@saicongames/talos-api` is its **peer dependency**, so it resolves under `node_modules` but is **not** expected in the app's `package.json`.
+
+1. Read the project root `package.json` and look under `dependencies` (and `devDependencies`) for **`@saicongames/talos-integration-angular`** only. Do not require `@saicongames/talos-api` here — as a peer dep it normally won't be listed.
+2. Confirm both packages resolve on disk (Step 2 reads type definitions from each):
+   - `node_modules/@saicongames/talos-integration-angular`
+   - `node_modules/@saicongames/talos-api`
+
+Interpret the result:
+
+- **`@saicongames/talos-integration-angular` declared in `package.json` but either package missing from `node_modules`** — dependencies just aren't installed (or the peer dep didn't resolve). Tell the user to run `npm install` in the project root (no `/talos-init` needed if `.npmrc`/`NPM_TOKEN` are already set up), then re-run `/talos-feature`.
+- **`@saicongames/talos-integration-angular` missing from `package.json`** (whether or not `node_modules` has it) — the integration was never bootstrapped. **Stop** and point the user at `/talos-init` (below).
+
+In either "not ready" case, **stop before Step 1** — do not resolve the entity, attempt later steps against absent files, or run `npm install` / write any token yourself. When the package isn't in `package.json`, tell the user the Talos integration isn't set up and point them at the sibling command that does it:
+
+> The Talos packages aren't installed yet. Run **`/talos-init`** (passing the environment values) to bootstrap the integration — it writes the `.npmrc` for the `@saicongames` private registry, installs `@saicongames/talos-integration-angular` (the `@saicongames/talos-api` peer dep comes in automatically), writes `environment.ts`, and wires `TalosModule.forRoot(...)` into `AppModule`. Then re-run `/talos-feature`.
+
+Before running `/talos-init`, the **`NPM_TOKEN` environment variable** must hold an npm auth token with read access to the `@saicongames` scope — `.npmrc` reads the token from it, and the packages are `access: restricted`, so without it the install fails to authenticate (`401`/`403`). Set it (Windows: `[Environment]::SetEnvironmentVariable("NPM_TOKEN","<token>","User")` · macOS/Linux: `export NPM_TOKEN="<token>"` in `~/.zshrc`/`~/.bashrc`) and restart the terminal/editor so it's inherited.
+
+Only proceed to Step 1 once `@saicongames/talos-integration-angular` is declared in `package.json` **and** both packages are present in `node_modules`.
+
 ## Step 1 — Resolve the entity (required input)
 
 Read the **entity** from `$1`. If no arguments were given, **ask and stop until answered** — it is required: *"Which Talos entity do you want to scaffold a feature for? (e.g. quiz, tournament, favorites)"*.
@@ -34,21 +56,6 @@ Normalize the entity and derive the casings used throughout as placeholders:
 - `<entity>` — folder / selector / file base (kebab, lowercase), e.g. `quiz`
 - `<Entity>` — class base (PascalCase), e.g. `Quiz`
 - `<talosProp>` / `<ApiClass>` — TalosService property and its API type: **resolved in Step 2, never guessed.**
-
-## Preflight — verify the Talos packages are installed
-
-Before Step 2, check that both packages resolve under `node_modules`:
-
-- `node_modules/@saicongames/talos-integration-angular`
-- `node_modules/@saicongames/talos-api`
-
-If **either** is missing, **stop** — do not attempt Step 2 against absent files, and do not run `npm install` or write any token yourself. Instead, tell the user the Talos packages aren't installed and point them at the sibling command that sets everything up:
-
-> The Talos packages aren't installed yet. Run **`/talos-init <npm-auth-token>`** to bootstrap the integration — it writes the `.npmrc` for the `@saicongames` private registry with your token, installs `@saicongames/talos-integration-angular` (the `@saicongames/talos-api` peer dep comes in automatically), writes `environment.ts`, and wires `TalosModule.forRoot(...)` into `AppModule`. Then re-run `/talos-feature`.
-
-`/talos-init` needs an npm auth token with read access to the `@saicongames` scope (the packages are `access: restricted`, so without it the install fails with `401`/`403`).
-
-Only continue to Step 2 once both packages are present in `node_modules`.
 
 ## Step 2 — Find the API on TalosService
 

@@ -1,6 +1,6 @@
 ---
-description: Bootstrap a Talos integration in an Angular/Ionic app. Takes a required npm auth token and a block of environment values. Writes `.npmrc` for the `@saicongames` private registry, installs `@saicongames/talos-integration-angular`, writes `src/environments/environment.ts` with the Talos config keys, and wires `TalosModule.forRoot(...)` into `AppModule`. Use when the user asks to "init/bootstrap/set up talos", "add the talos integration", or "wire up TalosModule" in a fresh app.
-argument-hint: <npm-auth-token> <env-values-block>
+description: Bootstrap a Talos integration in an Angular/Ionic app. Reads the npm auth token from the `NPM_TOKEN` environment variable and takes a block of environment values. Writes `.npmrc` for the `@saicongames` private registry, installs `@saicongames/talos-integration-angular`, writes `src/environments/environment.ts` with the Talos config keys, and wires `TalosModule.forRoot(...)` into `AppModule`. Use when the user asks to "init/bootstrap/set up talos", "add the talos integration", or "wire up TalosModule" in a fresh app.
+argument-hint: <env-values-block>
 ---
 
 # Talos init
@@ -10,17 +10,16 @@ One-shot bootstrap that gets a Talos integration running in an Angular/Ionic app
 Run this from the root of the Angular/Ionic app (where `package.json` and `src/environments/` live), not from the plugin repo.
 
 Locked decisions (do not re-ask):
-- **Registry:** `@saicongames` scope → `https://registry.npmjs.org`, token written to `.npmrc` in the project root.
+- **Registry:** `@saicongames` scope → `https://registry.npmjs.org`. `.npmrc` references the token via `${NPM_TOKEN}`; the literal secret is **never** written to the file.
 - **Install:** only `@saicongames/talos-integration-angular`. `@saicongames/talos-api` is a peer dep and comes in automatically — never install it separately.
 - **Config shape:** `environment.ts` exports a plain `environment` object with the exact keys in Step 3.
 - **Wiring:** `TalosModule.forRoot({...})` added to the `imports` array of `AppModule`, mapping each option from `environment`.
 
 ## Inputs
 
-Two inputs (from `$ARGUMENTS`):
+The npm auth token is **not** a command input — `.npmrc` references it via the `NPM_TOKEN` environment variable, which npm reads at install time. The only argument is:
 
-1. **npm auth token** (`$1`) — *required*. The token with read access to the `@saicongames` scope. It is a secret — write it only to `.npmrc` (which must be git-ignored). If not provided, **ask and stop until answered**: *"Paste the npm auth token with read access to the `@saicongames` scope."*
-2. **environment values** (`$2` onward) — *required*. The config values, accepted as a pasted object/`key: value` block. The required keys are:
+1. **environment values** (`$ARGUMENTS`) — *required*. The config values, accepted as a pasted object/`key: value` block. The required keys are:
 
    ```
    BASE_URL, GAME_TYPE_ID, USERGROUP_ID,
@@ -31,37 +30,46 @@ Two inputs (from `$ARGUMENTS`):
 
    If no values were passed, or any key is missing, **ask for the whole block and stop** until you have all of them. Do not invent, guess, or use placeholder values — every key must come from the user.
 
-Both inputs are required — the command cannot proceed without the token **and** a complete set of environment values.
-
-Usage: `/talos-init <npm-auth-token>` then paste the values when asked, or pass both up front.
+Usage: `/talos-init <env-values-block>`, or run `/talos-init` and paste the values when asked. The `NPM_TOKEN` environment variable must be set for the install in Step 2 to authenticate; if it isn't, the install will fail and Step 2 explains how to fix it.
 
 ## Step 1 — Configure the private registry (`.npmrc`)
 
 The `@saicongames` packages are `access: restricted`, so npm needs the token to read them (a missing/wrong token fails the install with `401`/`403`).
 
-Write (create or update) `.npmrc` in the project root with both lines, substituting the token from `$1`:
+Write (create or update) `.npmrc` in the project root with both lines **exactly as shown** — keep `${NPM_TOKEN}` as a literal reference; do not expand or inline the token value. npm substitutes the environment variable at read time:
 
 ```ini
 @saicongames:registry=https://registry.npmjs.org
-//registry.npmjs.org/:_authToken=<NPM_AUTH_TOKEN>
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}
 ```
 
-If `.npmrc` already has these lines, update the token in place rather than duplicating. Then make sure the token can't be committed: confirm `.npmrc` is listed in `.gitignore`, and add it if it isn't.
+If `.npmrc` already has these lines, leave the `${NPM_TOKEN}` reference in place (do not replace it with a literal token). Because no secret is written to the file, `.gitignore` is not strictly required for the token — but still confirm `.npmrc` is git-ignored if the project treats it as local config.
 
 ## Step 2 — Install the integration package
 
-Run from the project root:
+Do **not** check whether `NPM_TOKEN` is set beforehand — don't run any command to read or validate it. Once `.npmrc` exists (Step 1), just run the install and let npm succeed or fail:
 
 ```bash
 npm install @saicongames/talos-integration-angular
 ```
 
-`@saicongames/talos-api` (peer dep) is pulled in automatically — do **not** install it separately. After it finishes, verify both resolve under `node_modules`:
+`@saicongames/talos-api` (peer dep) is pulled in automatically — do **not** install it separately.
+
+**On success**, verify both resolve under `node_modules`, then continue to Step 3:
 
 - `node_modules/@saicongames/talos-integration-angular`
 - `node_modules/@saicongames/talos-api`
 
-If the install fails with `401`/`403`, the token is wrong or lacks scope access — stop and tell the user; don't proceed to Step 3.
+**If the install fails**, stop and don't proceed to Step 3. When the failure looks auth-related — `401`/`403`, `ENEEDAUTH`, "unable to authenticate", or "404 Not Found" on a `@saicongames` package — the most likely cause is that `.npmrc` resolved `${NPM_TOKEN}` to an empty value. Tell the user:
+
+> The install failed authenticating against the `@saicongames` registry. This is most likely because the `NPM_TOKEN` environment variable is empty or unset — `.npmrc` reads the token from it. Check that it has a value (Windows: `$env:NPM_TOKEN` · macOS/Linux: `echo $NPM_TOKEN`). If it's empty, set it and **restart the terminal/editor** so npm can see it:
+>
+> - **Windows (PowerShell):** `[Environment]::SetEnvironmentVariable("NPM_TOKEN","<token>","User")`
+> - **macOS / Linux:** add `export NPM_TOKEN="<token>"` to `~/.zshrc` or `~/.bashrc`
+>
+> Then re-run `/talos-init`. If `NPM_TOKEN` is already set, the token itself may be wrong or lack read access to the `@saicongames` scope.
+
+For a non-auth failure (network, disk, unrelated dependency error), report the actual npm error instead — don't assume it's the token.
 
 ## Step 3 — Write `src/environments/environment.ts`
 
@@ -112,7 +120,7 @@ If `TalosModule.forRoot(...)` is already in `imports`, update its option mapping
 
 ## Finish
 
-- Confirm the four artifacts: `.npmrc` (git-ignored), the installed package under `node_modules`, `environment.ts` with the ten keys, and `TalosModule.forRoot(...)` in `AppModule`.
-- Remind the user **not** to commit the token, and that the same token/registry setup is needed in CI.
+- Confirm the four artifacts: `.npmrc` (referencing `${NPM_TOKEN}`), the installed package under `node_modules`, `environment.ts` with the ten keys, and `TalosModule.forRoot(...)` in `AppModule`.
+- Remind the user that `.npmrc` holds no secret (only `${NPM_TOKEN}`), so it's safe to commit — but the same `NPM_TOKEN` environment variable must be set wherever the install runs, including CI.
 - Suggest `npm run build` (or `npm start`) to verify the app compiles with `TalosModule` wired.
 - Point at `/talos-feature <entity>` as the next step to scaffold a feature against the now-injectable `TalosService`.
